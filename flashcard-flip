@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Flip</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-front: #1e293b;
+            --card-back: #003366;
+            --accent-gold: #d97706;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 36px;
+            color: var(--accent-gold);
+            margin-bottom: 5px;
+        }
+
+        header .subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        header .author {
+            font-size: 13px;
+            color: var(--accent-gold);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .tracker {
+            font-size: 14px;
+            font-weight: 600;
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 6px 12px;
+            border-radius: 20px;
+            align-self: center;
+        }
+
+        .card {
+            perspective: 1000px;
+            width: 100%;
+            height: 280px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card.is-flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-front {
+            background-color: var(--card-front);
+            color: var(--text-light);
+        }
+
+        .card-back {
+            background-color: var(--card-back);
+            color: var(--text-light);
+            transform: rotateY(180deg);
+        }
+
+        .card-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-gold);
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .card-content {
+            font-size: 20px;
+            line-height: 1.5;
+            font-weight: 600;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 15px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: space-between;
+        }
+
+        button {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-side {
+            background-color: var(--card-front);
+            color: var(--text-light);
+            padding: 15px 25px;
+            font-size: 15px;
+        }
+
+        .btn-side:hover:not(:disabled) {
+            background-color: #334155;
+            transform: translateY(-2px);
+        }
+
+        .btn-side:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .btn-main {
+            background-color: var(--accent-gold);
+            color: white;
+            padding: 15px 35px;
+            font-size: 16px;
+            flex-grow: 1;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+        }
+
+        .btn-main:hover {
+            background-color: #b45309;
+            transform: translateY(-2px);
+        }
+
+        .form-section {
+            background-color: #1e293b;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: left;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-section h3 {
+            font-size: 16px;
+            color: var(--accent-gold);
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group textarea {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+
+        .form-group textarea {
+            height: 70px;
+            resize: none;
+        }
+
+        .btn-submit {
+            background-color: var(--text-light);
+            color: var(--bg-color);
+            padding: 12px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            background-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Flashcard Flip</h1>
+            <p class="subtitle">Interactive Active Recall Study Application</p>
+            <p class="author">By Badr Mbarki</p>
+        </header>
+
+        <div class="tracker" id="tracker-text">Card 1 of 3</div>
+
+        <div class="card" id="card-box">
+            <div class="card-inner">
+                <div class="card-face card-front">
+                    <span class="card-label">Question</span>
+                    <div class="card-content" id="q-content">Loading...</div>
+                    <span class="hint">Click Card to Reveal Answer</span>
+                </div>
+                <div class="card-face card-back">
+                    <span class="card-label">Answer</span>
+                    <div class="card-content" id="a-content">Loading...</div>
+                    <span class="hint">Click Card to Return to Question</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-side" id="btn-prev" disabled>Back</button>
+            <button class="btn-main" id="btn-flip">Flip</button>
+            <button class="btn-side" id="btn-next">Next</button>
+        </div>
+
+        <div class="form-section">
+            <h3>Add a Custom Card</h3>
+            <form id="card-form">
+                <div class="form-group">
+                    <label for="new-q">Question / Term</label>
+                    <input type="text" id="new-q" placeholder="e.g., What is active recall?" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="new-a">Answer / Definition</label>
+                    <textarea id="new-a" placeholder="e.g., Testing yourself instead of passively re-reading." required></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Add Card</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const deck = [
+            {
+                question: "What is Active Recall?",
+                answer: "Testing your brain to pull info out of your memory instead of just passively rereading."
+            },
+            {
+                question: "How does 'rotateY(180deg)' help our app?",
+                answer: "It is the CSS logic that spins our card element horizontally when clicked."
+            },
+            {
+                question: "Why are physical flashcards bad for the environment?",
+                answer: "They cause high paper waste, and they are easily lost or ruined."
+            }
+        ];
+
+        let index = 0;
+
+        const cardBox = document.getElementById('card-box');
+        const qContent = document.getElementById('q-content');
+        const aContent = document.getElementById('a-content');
+        const trackerText = document.getElementById('tracker-text');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const btnFlip = document.getElementById('btn-flip');
+        const cardForm = document.getElementById('card-form');
+
+        function showCard() {
+            cardBox.classList.remove('is-flipped');
+            
+            setTimeout(() => {
+                qContent.textContent = deck[index].question;
+                aContent.textContent = deck[index].answer;
+                trackerText.textContent = `Card ${index + 1} of ${deck.length}`;
+                
+                btnPrev.disabled = index === 0;
+                btnNext.disabled = index === deck.length - 1;
+            }, 150);
+        }
+
+        function flipCard() {
+            cardBox.classList.toggle('is-flipped');
+        }
+
+        function goNext() {
+            if (index < deck.length - 1) {
+                index++;
+                showCard();
+            }
+        }
+
+        function goPrev() {
+            if (index > 0) {
+                index--;
+                showCard();
+            }
+        }
+
+        cardForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const question = document.getElementById('new-q').value.trim();
+            const answer = document.getElementById('new-a').value.trim();
+
+            if (question && answer) {
+                deck.push({ question, answer });
+                document.getElementById('new-q').value = '';
+                document.getElementById('new-a').value = '';
+                showCard();
+            }
+        });
+
+        cardBox.addEventListener('click', flipCard);
+        btnFlip.addEventListener('click', flipCard);
+        btnNext.addEventListener('click', goNext);
+        btnPrev.addEventListener('click', goPrev);
+
+        showCard();
+    </script>
+</body>
+</html>
